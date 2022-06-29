@@ -4,6 +4,7 @@ from streamlit_option_menu import option_menu
 import plotly.graph_objects as pgo
 import calendar
 from datetime import datetime
+import db as db
 
 incomes = ["Salary","Investments","Other Incomes"]
 expenses = ["Utilities","Insurance","Groceries","Bills","Other expenses"]
@@ -57,18 +58,18 @@ if selected == "Data":
             period = str(st.session_state["year"]) + "_" + str(st.session_state["month"])
             incomes = {income: st.session_state[income] for income in incomes}
             expenses = {expense: st.session_state[expense] for expense in expenses}
+            db.insert_period(period,incomes,expenses)
 
-            st.write(f"incomes: {incomes}")
-            st.write(f"expenses: {expenses}")
             st.success("Data Saved")
 if selected == "Data Visualization":
     st.header("Data Visualization")
     with st.form("saved_duration"):
-        period = st.selectbox("Select Duration:", ["2022_March"])
+        period = st.selectbox("Select Duration:", db.get_all_periods())
         submitted = st.form_submit_button("Plot Duration")
         if submitted:
-            incomes = {'Salary':70000,'Investments':50000,'Other Incomes': 0}
-            expenses = {'Utilities':900,'Insurance':3000,'Groceries':300,'Bills':400,'Other expenses':500}
+            period_data = db.get_period(period)
+            incomes = period_data.get("incomes")
+            expenses = period_data.get("expenses")
 
             total_income = sum(incomes.values())
             total_expense = sum(expenses.values())
